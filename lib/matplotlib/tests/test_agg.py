@@ -219,3 +219,25 @@ def test_too_large_image():
     buff = io.BytesIO()
     with pytest.raises(ValueError):
         fig.savefig(buff)
+
+
+def test_chunksize():
+    x = range(20000000)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    tmpChunck = plt.rcParams['agg.path.chunksize']
+
+    # Test without setting chunksize
+    with pytest.raises(OverflowError):
+        ax.plot(x, np.sin(x))
+
+    # Test with large chuncksize
+    plt.rcParams['agg.path.chunksize'] = 10000000
+    with pytest.raises(OverflowError):
+        ax.plot(x, np.sin(x))
+
+    # Test with small chunksize
+    plt.rcParams['agg.path.chunksize'] = 10000
+    ax.plot(x, np.sin(x))
+
+    plt.rcParams['agg.path.chunksize'] = tmpChunck
